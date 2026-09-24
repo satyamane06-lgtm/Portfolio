@@ -68,22 +68,32 @@
 
             var data = new URLSearchParams();
             data.append('form-name', 'contact');
+            data.append('bot-field', '');
             data.append('name', name.value.trim());
             data.append('email', email.value.trim());
             data.append('message', message.value.trim());
 
-            fetch('/', {
+            fetch(form.getAttribute('action') || '/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: data.toString()
             })
                 .then(function (res) {
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    if (status) status.textContent = 'Message sent successfully';
+                    if (!res.ok) {
+                        if (res.status === 404) {
+                            if (status) status.textContent = 'Message not sent - Netlify Forms is not enabled yet. Open Site Settings > Forms on Netlify, click Enable, then trigger a re-deploy.';
+                        } else if (res.status === 400) {
+                            if (status) status.textContent = 'Message not sent - Netlify flagged this submission as spam. Please try again.';
+                        } else {
+                            if (status) status.textContent = 'Message not sent (HTTP ' + res.status + '). Please try again.';
+                        }
+                        return;
+                    }
+                    if (status) status.textContent = 'Message sent successfully!';
                     form.reset();
                 })
                 .catch(function () {
-                    if (status) status.textContent = 'Could not send your message. This form works when the site is deployed on Netlify.';
+                    if (status) status.textContent = 'Message not sent - could not reach the server. Please check your connection and try again.';
                 });
         });
     }
