@@ -63,8 +63,14 @@ body::before {
     background-color: rgb(27, 25, 25);
 }
 
-.im {
-    margin-top: -60px;
+/* The photo block is a centred flex row. Vertical spacing is owned by the
+   card's flex gap, so the old -60px overlap hack is no longer needed. */
+.sidbar .card .im {
+    margin-top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
 }
 
 .logo {
@@ -83,10 +89,13 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
+    gap: 16px;
     flex-wrap: nowrap;
-    padding-left: 10px;
-    padding-right: 10px;
+    /* Reset ".container"'s 50px/20px padding - the card's gap handles rhythm,
+       and the card padding keeps the row clear of the border. */
+    padding: 0;
+    margin: 0;
+    max-width: none;
 }
 
 /* Cancel the -15px lift from ".card img" so the logo centres on the text */
@@ -127,12 +136,85 @@ body::before {
     transition: 0.3s;
 }
 
+/* Profile photo: sized as a share of the sidebar card so it always leaves an
+   even margin inside the border. The old build capped the photo at 21vh, which
+   made it shrink on short/wide desktops; tying it to the card width instead
+   keeps it ~20-45% larger on desktop while still stepping down on tablets and
+   phones. height:auto keeps the true 1089x1444 ratio (200x225 squashed it). */
+.sidbar .card .im .profile-photo {
+    width: 70%;
+    max-width: 225px;
+    min-width: 150px;
+    height: auto;
+    /* cancel the -15px lift from ".card img" so the gap above is even */
+    margin: 0;
+    display: block;
+}
+
+/* Copyright / social icons / contact button, evenly stacked and centred */
+.sidbar .card .sidebar-foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+}
+
+.sidbar .card .sidebar-foot .card-text {
+    margin: 0;
+}
+
+.sidbar .card .sidebar-foot .social-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.sidbar .card .sidebar-foot .social-links img {
+    /* replaces the old me-1/ms-1 margins so the pair centres symmetrically */
+    margin: 0;
+}
+
+.sidbar .card .sidebar-foot .btn {
+    /* the old mb-4 is now handled by the card's bottom padding */
+    margin-bottom: 0;
+}
+
 .card:hover {
     box-shadow: 0 0 20px cyan;
     transform: scale(1.01);
 }
 
 /* ==================== INTRO / STATS (2nd Section) ==================== */
+/* Introduction rhythm. Horizontal padding matches .middle .container (14px)
+   so every section shares the same left/right margin, and the big heading
+   can never sit flush against the screen edge. */
+#introduction {
+    margin-top: 0;
+    padding: 34px 14px 30px;
+}
+
+#introduction .heading {
+    margin: 0 0 26px;
+}
+
+#introduction .intro-title {
+    margin: 0 auto 20px;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+#introduction .intro-text {
+    margin: 0 auto;
+    max-width: 60ch;
+    overflow-wrap: break-word;
+}
+
+#introduction .rotate-img {
+    margin: 30px auto 0;
+}
+
 .heading {
     position: relative;
     display: inline-block;
@@ -253,6 +335,23 @@ body::before {
     transition: 0.4s ease;
     animation: fadeInUp 0.7s both;
     min-width: 0;
+    /* Grid items stretch to the tallest card in the row, so making the packet
+       a full-height flex column equalises card heights and lines the
+       "View Project" links up along the bottom of every row. */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.project-packet .project-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 auto;
+}
+
+.project-packet .project-btn-small {
+    margin-top: auto;
 }
 
 .project-packet:hover {
@@ -322,11 +421,20 @@ body::before {
     50% { box-shadow: 0 0 28px rgba(0, 255, 255, 0.85); }
 }
 
+/* Badges centre as a wrapped flex row: a gap on each side keeps the group
+   optically centred, which a trailing margin-right could not do. */
+.project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
 .project-tags .badge {
     background: rgb(61, 60, 60);
     border: 1px solid cyan;
     color: white;
-    margin-right: 5px;
+    margin-right: 0;
     font-weight: 400;
     padding: 8px 15px;
 }
@@ -687,7 +795,7 @@ textarea:focus {
 
 /* Social icon links: the <a> box used to be only 40x21, so most of the visible
    icon sat outside the clickable area. Excludes the Contact Me button. */
-.sidbar .card .text-center a:not(.btn) {
+.sidbar .card .sidebar-foot a:not(.btn) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -756,6 +864,12 @@ textarea:focus {
     border: 1px solid cyan;
     border-radius: 32px;
     box-shadow: 0 0 12px rgba(0, 255, 255, 0.25);
+    /* Even vertical rhythm between header / photo / footer, and padding that
+       guarantees nothing touches the border. */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 26px 18px 24px;
 }
 
 /* The inner sections used to paint their own square-cornered background, which
@@ -833,11 +947,18 @@ textarea:focus {
     .sidbar {
         padding: 14px 10px;
     }
+}
 
-    .sidbar .card .im img {
-        width: auto;
-        height: auto;
-        max-height: 21vh;
+/* Short desktop windows: trim the photo by WIDTH. Capping the height instead
+   (the old max-height:21vh) squashed it because the width stayed fixed. */
+@media (min-width: 993px) and (max-height: 700px) {
+    .sidbar .card {
+        gap: 14px;
+        padding: 20px 14px;
+    }
+
+    .sidbar .card .im .profile-photo {
+        width: 64%;
     }
 }
 
@@ -897,6 +1018,16 @@ textarea:focus {
     .sidbar {
         padding-right: 64px;
     }
+
+    /* The sidebar is full width when stacked, so the photo is driven by the
+       viewport and steps down on phones. */
+    .sidbar .card .im .profile-photo {
+        width: clamp(150px, 44vw, 200px);
+    }
+
+    .sidbar .card {
+        padding: 24px 16px 22px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -918,8 +1049,6 @@ textarea:focus {
 
     .sidebar-head {
         gap: 12px;
-        padding-left: 6px;
-        padding-right: 6px;
     }
 
     .sidebar-head-title {
@@ -946,9 +1075,10 @@ textarea:focus {
         font-size: 24px;
     }
 
-    .im img {
-        width: 160px !important;
-        height: 180px !important;
+    /* Keeps the phone rhythm tight without squashing the photo */
+    .sidbar .card {
+        gap: 16px;
+        padding: 20px 14px 18px;
     }
 }
 
