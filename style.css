@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* Font is loaded from <head> in index.html via <link> + preconnect.
+   An @import here would make this entire stylesheet render-block on a
+   third-party network request. */
 
 /* ==================== THEME / BASE ==================== */
 :root {
@@ -13,7 +15,6 @@
 * {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
 }
 
 html,
@@ -75,6 +76,48 @@ body::before {
 @keyframes logoFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
+}
+
+/* Sidebar header: logo + "Full Stack Developer" on one centered row */
+.sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Cancel the -15px lift from ".card img" so the logo centres on the text */
+.sidebar-head .logo {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.sidebar-head-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 11rem;
+    line-height: 1.25;
+    text-align: left;
+    overflow-wrap: break-word;
+}
+
+/* Narrow desktop sidebar (lg column is only 25% wide): keep the row on one line */
+@media (min-width: 993px) and (max-width: 1199px) {
+    .sidebar-head {
+        gap: 12px;
+    }
+
+    .sidebar-head .logo {
+        width: 84px;
+    }
+
+    .sidebar-head-title {
+        max-width: none;
+        font-size: 14px;
+    }
 }
 
 .card img {
@@ -169,6 +212,39 @@ body::before {
 }
 
 /* ==================== PROJECTS (4th Section) ==================== */
+/* Responsive grid: 3 cards on desktop, 2 on tablet, 1 on mobile.
+   minmax(0, 1fr) stops long words/images forcing the grid wider than its
+   container, which is what used to cause horizontal scrolling. */
+#projects .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* The Bootstrap column classes are no longer needed once the row is a grid */
+#projects .row > [class*="col-"] {
+    width: auto;
+    max-width: none;
+    flex: none;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    #projects .row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    #projects .row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
 .project-packet {
     background: rgba(255, 255, 255, 0.02);
     padding: 20px;
@@ -176,6 +252,7 @@ body::before {
     border: 1px solid cyan;
     transition: 0.4s ease;
     animation: fadeInUp 0.7s both;
+    min-width: 0;
 }
 
 .project-packet:hover {
@@ -193,6 +270,7 @@ body::before {
 
 .project-img-wrapper img {
     width: 100%;
+    max-width: 100%;
     height: auto;
     display: block;
     transition: var(--transition);
@@ -256,6 +334,7 @@ body::before {
 .project-name {
     font-size: 28px;
     margin: 10px 0;
+    overflow-wrap: break-word;
 }
 
 .project-btn-small {
@@ -263,7 +342,8 @@ body::before {
     text-decoration: none;
     font-size: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-    padding-bottom: 2px;
+    padding: 5px 2px 2px;
+    display: inline-block;
     transition: var(--transition);
 }
 
@@ -517,11 +597,14 @@ textarea:focus {
 }
 
 /* ==================== FLOATING NAVBAR ==================== */
+/* Desktop: centred inside its own (right-hand) column both ways by .navfl's
+   flexbox, so it re-centres automatically on any screen size. */
 .side-navbar {
-    position: fixed;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    flex: 0 0 auto;
     background: #111;
     border: 2px solid cyan;
     border-radius: 40px;
@@ -602,6 +685,17 @@ textarea:focus {
     100% { transform: scale(1); }
 }
 
+/* Social icon links: the <a> box used to be only 40x21, so most of the visible
+   icon sat outside the clickable area. Excludes the Contact Me button. */
+.sidbar .card .text-center a:not(.btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    min-height: 42px;
+    vertical-align: middle;
+}
+
 /* ==================== CONTACT ME BUTTON ==================== */
 .btn-info {
     box-shadow: 0 0 14px rgba(0, 255, 255, 0.4);
@@ -618,6 +712,11 @@ textarea:focus {
 .contaner-foud {
     height: 100vh;
     height: 100dvh;
+    /* Compensate the Bootstrap .row gutter (-12px) so the row cannot
+       overflow the viewport horizontally */
+    padding-left: 12px;
+    padding-right: 12px;
+    box-sizing: border-box;
 }
 
 .contaner-foud > .row {
@@ -649,6 +748,26 @@ textarea:focus {
 
 .sidbar .card {
     margin: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* One continuous card: the card itself paints the dark surface and owns a
+       single even cyan border, so the outline is unbroken on all four sides. */
+    background: rgb(27, 25, 25);
+    border: 1px solid cyan;
+    border-radius: 32px;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.25);
+}
+
+/* The inner sections used to paint their own square-cornered background, which
+   poked out past the card's rounded corners and made the border look broken.
+   They are now transparent so only the rounded card is painted. */
+.sidbar .card > .bagro {
+    background-color: transparent;
+}
+
+/* Sidebar images (logo, profile photo, social icons) never leave the card */
+.sidbar .card img {
+    max-width: 100%;
 }
 
 .navfl {
@@ -753,8 +872,13 @@ textarea:focus {
         height: auto;
     }
 
+    /* Mobile/tablet: the column is stacked, so pin the nav to the right edge
+       and keep it vertically centred in the viewport instead. */
     .side-navbar {
+        position: fixed;
+        top: 50%;
         right: 6px;
+        transform: translateY(-50%);
         padding: 8px 4px;
         border-radius: 30px;
     }
@@ -790,6 +914,16 @@ textarea:focus {
 @media (max-width: 400px) {
     .sidbar .logo {
         width: 70px;
+    }
+
+    .sidebar-head {
+        gap: 12px;
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .sidebar-head-title {
+        max-width: 9rem;
     }
 
     .sidbar .card .fw-bold {
